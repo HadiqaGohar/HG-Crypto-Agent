@@ -165,21 +165,26 @@ class CryptoDataAgent:
             logger.info(f"Gemini raw response object: {response}") # Log the full response object for more details
             # --- END DEBUGGING LOGS ---
 
-            # Check if response.text exists and is not empty
-            # Use getattr to safely access response.text, providing a default empty string
-            response_text = getattr(response, 'text', '').strip()
+            # Robustly check if text content exists in the response
+            response_text = None
+            if response and response.candidates:
+                for candidate in response.candidates:
+                    if candidate.content and candidate.content.parts:
+                        for part in candidate.content.parts:
+                            if part.text:
+                                response_text = part.text
+                                break
+                    if response_text:
+                        break
+            
+            if not response_text:
+                logger.warning(f"Gemini returned an empty or invalid text response for query: '{query}'. Full response: {response}")
+                return None
+
+            extracted_symbol = response_text.strip().upper() # Ensure the symbol is uppercase and remove whitespace
             
             # --- START DEBUGGING LOGS ---
             logger.info(f"Gemini response text (stripped): '{response_text}'")
-            # --- END DEBUGGING LOGS ---
-
-            if not response_text:
-                logger.warning(f"Gemini returned an empty or invalid text response for query: '{query}'")
-                return None
-
-            extracted_symbol = response_text.upper() # Ensure the symbol is uppercase
-            
-            # --- START DEBUGGING LOGS ---
             logger.info(f"Extracted symbol after strip/upper: '{extracted_symbol}'")
             # --- END DEBUGGING LOGS ---
 
