@@ -5,6 +5,9 @@ import requests
 import google.generativeai as genai
 import logging
 import re
+# Import the specific enums for safety settings
+from google.generativeai.types import HarmCategory, HarmBlockThreshold
+
 
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -159,7 +162,17 @@ class CryptoDataAgent:
             ).format(query=query)
             
             logger.info(f"Sending prompt to Gemini for query interpretation: '{query}'")
-            response = self.google_model.generate_content(prompt, safety_settings={'HARASSMENT': 'BLOCK_NONE', 'HATE_SPEECH': 'BLOCK_NONE', 'SEXUALLY_EXPLICIT': 'BLOCK_NONE', 'DANGEROUS_CONTENT': 'BLOCK_NONE'})
+            
+            # Using HarmCategory and HarmBlockThreshold enums for safety settings
+            response = self.google_model.generate_content(
+                prompt, 
+                safety_settings={
+                    HarmCategory.HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
+                    HarmCategory.HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
+                    HarmCategory.SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_NONE,
+                    HarmCategory.DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE # Corrected category
+                }
+            )
             
             # --- START DEBUGGING LOGS ---
             logger.info(f"Gemini raw response object: {response}") # Log the full response object for more details
