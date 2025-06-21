@@ -1,7 +1,7 @@
 # crypto_app.py
 
 import streamlit as st
-from crypto_agent import CryptoDataAgent  # Assuming your main class is saved in crypto_agent.py
+from agent import CryptoDataAgent  # Assuming your main class is saved in crypto_agent.py
 import os
 from dotenv import load_dotenv
 
