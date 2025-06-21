@@ -23,9 +23,23 @@ import os
 #     st.stop()
 
 
-gemini_api_key = st.secrets["GEMINI_API_KEY"]
-binance_api_key = st.secrets["BINANCE_API_KEY"]
-binance_api_secret = st.secrets["BINANCE_API_SECRET"]
+
+if "GEMINI_API_KEY" in st.secrets:
+    # Use Streamlit secrets
+    gemini_api_key = st.secrets["GEMINI_API_KEY"]
+    binance_api_key = st.secrets["BINANCE_API_KEY"]
+    binance_api_secret = st.secrets["BINANCE_API_SECRET"]
+else:
+    # Fallback to local .env
+    from dotenv import load_dotenv
+    load_dotenv()
+
+    gemini_api_key = os.getenv("GEMINI_API_KEY")
+    binance_api_key = os.getenv("BINANCE_API_KEY")
+    binance_api_secret = os.getenv("BINANCE_API_SECRET")
+
+
+# --------------------------------------
 
 # Set page config
 st.set_page_config(page_title="HG Crypto Assistant", page_icon="💰")
