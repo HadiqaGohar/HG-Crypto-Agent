@@ -41,3 +41,4 @@ st.markdown("""
     Developed by Hadiqa Gohar 💻 | Powered by Gemini & Binance APIs 🔗
 </div>
 """, unsafe_allow_html=True)
+
