@@ -6,7 +6,7 @@ import google.generativeai as genai
 from dotenv import load_dotenv
 import logging
 import re
-
+import streamlit as st
 
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -18,10 +18,16 @@ if not load_dotenv():
     print("Error: .env file not found or could not be loaded.")
     exit(1)
 
-# Get API keys from environment variables
-gemini_api_key = os.getenv("GEMINI_API_KEY")
-binance_api_key = os.getenv("BINANCE_API_KEY")
-binance_api_secret = os.getenv("BINANCE_API_SECRET")
+# # Get API keys from environment variables
+# gemini_api_key = os.getenv("GEMINI_API_KEY")
+# binance_api_key = os.getenv("BINANCE_API_KEY")
+# binance_api_secret = os.getenv("BINANCE_API_SECRET")
+
+
+# Get secrets from Streamlit cloud
+gemini_api_key = st.secrets["GEMINI_API_KEY"]
+binance_api_key = st.secrets["BINANCE_API_KEY"]
+binance_api_secret = st.secrets["BINANCE_API_SECRET"]
 
 # Check if Gemini API key is set
 if not gemini_api_key:
