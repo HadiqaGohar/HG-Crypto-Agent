@@ -24,14 +24,27 @@ st.write("Ask about the price of Bitcoin, Ethereum, BNB, XRP, Cardano, etc.")
 
 query = st.text_input("🔍 Enter your query:", placeholder="e.g. What's the price of Ethereum?")
 
+# if st.button("Get Price"):
+#     if not query.strip():
+#         st.warning("Please enter a query.")
+#     else:
+#         with st.spinner("Fetching price..."):
+#             result = agent.run(query)
+#         st.success("Result:")
+#         st.write(result)
+
 if st.button("Get Price"):
     if not query.strip():
         st.warning("Please enter a query.")
     else:
         with st.spinner("Fetching price..."):
             result = agent.run(query)
-        st.success("Result:")
-        st.write(result)
+        if result:
+            st.success("Result:")
+            st.write(result)
+        else:
+            st.error("Something went wrong while fetching the price.")
+
 
 # Footer
 st.markdown("""
