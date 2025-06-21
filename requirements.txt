@@ -1,5 +1,7 @@
 streamlit
-requests
-python-dotenv
 google-generativeai
+<<<<<<< HEAD
 
+=======
+requests
+>>>>>>> 99b800d20abce9f4af4913b4dbea793f067486af
