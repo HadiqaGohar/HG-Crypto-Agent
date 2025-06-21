@@ -1,24 +1,27 @@
+# crypto_app.py
+
 import streamlit as st
 from crypto_agent import CryptoDataAgent
+import os
 
-# Set up Streamlit UI
-st.set_page_config(page_title="💰 HG Crypto Assistant", page_icon="💰")
-st.title("💰 Crypto Price Assistant")
-st.write("Ask about the price of Bitcoin, Ethereum, BNB, XRP, Cardano, etc.")
+# Get secrets
+gemini_api_key = st.secrets["GEMINI_API_KEY"]
+binance_api_key = st.secrets["BINANCE_API_KEY"]
+binance_api_secret = st.secrets["BINANCE_API_SECRET"]
 
-# Initialize the agent
+# Initialize agent
 try:
-    agent = CryptoDataAgent(
-        gemini_api_key=st.secrets["GEMINI_API_KEY"],
-        binance_api_key=st.secrets["BINANCE_API_KEY"],
-        binance_api_secret=st.secrets["BINANCE_API_SECRET"]
-    )
+    agent = CryptoDataAgent(gemini_api_key, binance_api_key, binance_api_secret)
 except Exception as e:
     st.error(f"Agent initialization failed: {e}")
     st.stop()
 
-# User input
-query = st.text_input("🔍 Enter your query:", placeholder="e.g. What's the price of Bitcoin?")
+# UI
+st.set_page_config(page_title="HG Crypto Assistant", page_icon="💰")
+st.title("💰 Crypto Price Assistant")
+st.write("Ask about the price of Bitcoin, Ethereum, BNB, XRP, Cardano etc.")
+
+query = st.text_input("🔍 Enter your query:", placeholder="e.g. What's the price of Ethereum?")
 
 if st.button("Get Price"):
     if not query.strip():
@@ -26,11 +29,8 @@ if st.button("Get Price"):
     else:
         with st.spinner("Fetching price..."):
             result = agent.run(query)
-        if result:
-            st.success("Result:")
-            st.write(result)
-        else:
-            st.error("Something went wrong while fetching the price.")
+        st.success("Result:")
+        st.write(result)
 
 # Footer
 st.markdown("""
