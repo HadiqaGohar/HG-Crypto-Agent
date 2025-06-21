@@ -1,51 +1,19 @@
-# crypto_app.py
-
 import streamlit as st
-from crypto_agent import CryptoDataAgent  # Assuming your main class is saved in crypto_agent.py
-import os
-# from dotenv import load_dotenv
+from crypto_agent import CryptoDataAgent  # Adjust this if crypto_agent.py is in subfolder
 
-# # Load environment variables
-# if not load_dotenv():
-#     st.error(".env file not found or could not be loaded.")
-#     st.stop()
+# Use secrets from Streamlit settings
+gemini_api_key = st.secrets["GEMINI_API_KEY"]
+binance_api_key = st.secrets["BINANCE_API_KEY"]
+binance_api_secret = st.secrets["BINANCE_API_SECRET"]
 
-# # Get API keys
-# gemini_api_key = os.getenv("GEMINI_API_KEY")
-# binance_api_key = os.getenv("BINANCE_API_KEY")
-# binance_api_secret = os.getenv("BINANCE_API_SECRET")
+# Initialize the agent
+try:
+    agent = CryptoDataAgent(gemini_api_key, binance_api_key, binance_api_secret)
+except Exception as e:
+    st.error(f"Failed to initialize agent: {e}")
+    st.stop()
 
-# # Initialize the agent
-# try:
-#     agent = CryptoDataAgent(gemini_api_key, binance_api_key, binance_api_secret)
-# except Exception as e:
-#     st.error(f"Failed to initialize agent: {e}")
-#     st.stop()
-
-
-
-if "GEMINI_API_KEY" in st.secrets:
-    # Use Streamlit secrets
-    gemini_api_key = st.secrets["GEMINI_API_KEY"]
-    binance_api_key = st.secrets["BINANCE_API_KEY"]
-    binance_api_secret = st.secrets["BINANCE_API_SECRET"]
-else:
-    # Fallback to local .env
-    from dotenv import load_dotenv
-    load_dotenv()
-
-    gemini_api_key = os.getenv("GEMINI_API_KEY")
-    binance_api_key = os.getenv("BINANCE_API_KEY")
-    binance_api_secret = os.getenv("BINANCE_API_SECRET")
-
-
-# --------------------------------------
-
-# Set page config
 st.set_page_config(page_title="HG Crypto Assistant", page_icon="💰")
-
-
-# Streamlit UI
 st.title("💰 Crypto Price Assistant")
 st.write("Ask about the price of Bitcoin, Ethereum, BNB, XRP, Cardano etc.")
 
