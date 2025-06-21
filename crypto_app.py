@@ -9,9 +9,15 @@ if not load_dotenv():
     st.stop()
 
 # Get API keys
-gemini_api_key = os.getenv("GEMINI_API_KEY")
-binance_api_key = os.getenv("BINANCE_API_KEY")
-binance_api_secret = os.getenv("BINANCE_API_SECRET")
+# gemini_api_key = os.getenv("GEMINI_API_KEY")
+# binance_api_key = os.getenv("BINANCE_API_KEY")
+# binance_api_secret = os.getenv("BINANCE_API_SECRET")
+# import streamlit as st
+
+gemini_api_key = st.secrets["GEMINI_API_KEY"]
+binance_api_key = st.secrets["BINANCE_API_KEY"]
+binance_api_secret = st.secrets["BINANCE_API_SECRET"]
+
 
 # Initialize the agent
 try:
