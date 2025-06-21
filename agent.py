@@ -139,21 +139,23 @@ class CryptoDataAgent:
                               or None if no valid symbol can be determined.
         """
         try:
+            # Refined prompt for more precise symbol extraction
             prompt = (
-                "You are an expert in cryptocurrency trading pairs. From the query: '{query}', "
-                "extract the primary cryptocurrency trading pair (e.g., BTCUSDT for Bitcoin, ETHUSDT for Ethereum). "
-                "Return ONLY the trading pair in uppercase (e.g., BTCUSDT). "
-                "If the query explicitly mentions a common cryptocurrency name but not a direct symbol, "
-                "use this mapping: Bitcoin -> BTCUSDT, Ethereum -> ETHUSDT, Binance Coin -> BNBUSDT, "
-                "Ripple -> XRPUSDT, Cardano -> ADAUSDT, Dogecoin -> DOGEUSDT, Solana -> SOLUSDT, Polkadot -> DOTUSDT. "
-                "If still unclear or if the query is unrelated to cryptocurrencies, return the exact string 'NONE_FOUND'."
+                "You are an expert in cryptocurrency trading pairs. Your task is to extract the EXACT "
+                "cryptocurrency trading pair (e.g., BTCUSDT, ETHUSDT) from the given query. "
+                "The output MUST be in uppercase. If the query mentions a common crypto name, use the following mapping: "
+                "Bitcoin -> BTCUSDT, Ethereum -> ETHUSDT, Binance Coin -> BNBUSDT, Ripple -> XRPUSDT, Cardano -> ADAUSDT, "
+                "Dogecoin -> DOGEUSDT, Solana -> SOLUSDT, Polkadot -> DOTUSDT. "
+                "If no valid or relevant trading pair can be determined from the query, return the string 'NONE_FOUND'. "
+                "DO NOT include any other text, explanations, or punctuation in your response, just the symbol or 'NONE_FOUND'.\n"
                 "\nExamples:\n"
                 "Query: 'What is the current price of Bitcoin?' -> Response: 'BTCUSDT'\n"
                 "Query: 'Price of ETH?' -> Response: 'ETHUSDT'\n"
                 "Query: 'How much is Cardano?' -> Response: 'ADAUSDT'\n"
                 "Query: 'Current value of Dogecoin?' -> Response: 'DOGEUSDT'\n"
-                "Query: 'What's the weather like?' -> Response: 'NONE_FOUND'\n"
                 "Query: 'Tell me about the stock market.' -> Response: 'NONE_FOUND'\n"
+                "Query: 'What's the weather like today?' -> Response: 'NONE_FOUND'\n"
+                "Query: '{query}' -> Response:"
             ).format(query=query)
             
             logger.info(f"Sending prompt to Gemini for query interpretation: '{query}'")
