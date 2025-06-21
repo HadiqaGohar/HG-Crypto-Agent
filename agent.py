@@ -159,12 +159,20 @@ class CryptoDataAgent:
             logger.info(f"Sending prompt to Gemini for query interpretation: '{query}'")
             response = self.google_model.generate_content(prompt, safety_settings={'HARASSMENT': 'BLOCK_NONE', 'HATE_SPEECH': 'BLOCK_NONE', 'SEXUALLY_EXPLICIT': 'BLOCK_NONE', 'DANGEROUS_CONTENT': 'BLOCK_NONE'})
             
+            # --- START DEBUGGING LOGS ---
+            logger.info(f"Gemini raw response text: '{response.text}'")
+            # --- END DEBUGGING LOGS ---
+
             # Check if response.text exists and is not empty
             if not response.text:
                 logger.warning(f"Gemini returned an empty response for query: '{query}'")
                 return None
 
             extracted_symbol = response.text.strip().upper() # Ensure the symbol is uppercase and remove whitespace
+            
+            # --- START DEBUGGING LOGS ---
+            logger.info(f"Extracted symbol after strip/upper: '{extracted_symbol}'")
+            # --- END DEBUGGING LOGS ---
 
             if extracted_symbol == 'NONE_FOUND':
                 logger.warning(f"Gemini could not identify a valid crypto symbol for query: '{query}'")
