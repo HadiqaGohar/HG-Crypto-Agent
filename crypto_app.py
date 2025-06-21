@@ -1,5 +1,6 @@
 import streamlit as st
-from crypto_agent import CryptoDataAgent  # Adjust this if crypto_agent.py is in subfolder
+# from crypto_agent import CryptoDataAgent  # Adjust this if crypto_agent.py is in subfolder
+from src.crypto_agent import CryptoDataAgent
 
 # Use secrets from Streamlit settings
 gemini_api_key = st.secrets["GEMINI_API_KEY"]
