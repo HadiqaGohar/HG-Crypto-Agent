@@ -4,15 +4,23 @@ import os
 import logging
 
 # Set up logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler('/home/hadiqa/Documents/AI/crypto_agent/crypto_agent.log'),
-        logging.StreamHandler()
-    ]
-)
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+
+# Console handler
+console_handler = logging.StreamHandler()
+console_handler.setFormatter(formatter)
+logger.addHandler(console_handler)
+
+# File handler (only if not in Streamlit Cloud)
+if not os.getenv("STREAMLIT_SERVER_HEADLESS"):
+    try:
+        file_handler = logging.FileHandler('crypto_agent.log')
+        file_handler.setFormatter(formatter)
+        logger.addHandler(file_handler)
+    except Exception as e:
+        logger.warning(f"Could not set up file logging: {e}")
 
 # Load API keys from Streamlit secrets or environment variables
 try:
