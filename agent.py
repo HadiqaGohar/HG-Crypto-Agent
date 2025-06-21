@@ -1,145 +1,126 @@
-# crypto_agent.py
-
-import os
+import streamlit as st
 import requests
 import google.generativeai as genai
-from dotenv import load_dotenv
 import logging
 import re
 
-
-# Set up logging
+# Logging setup
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-# Load environment variables from .env file
-if not load_dotenv():
-    logger.error(".env file not found or could not be loaded.")
-    print("Error: .env file not found or could not be loaded.")
-    exit(1)
+# API keys from Streamlit secrets
+gemini_api_key = st.secrets["GEMINI_API_KEY"]
+binance_api_key = st.secrets["BINANCE_API_KEY"]import requests
+import google.generativeai as genai
+import logging
+import re
 
-# Get API keys from environment variables
-gemini_api_key = os.getenv("GEMINI_API_KEY")
-binance_api_key = os.getenv("BINANCE_API_KEY")
-binance_api_secret = os.getenv("BINANCE_API_SECRET")
-
-# Check if Gemini API key is set
-if not gemini_api_key:
-    logger.error("GEMINI_API_KEY environment variable not set.")
-    print("Error: GEMINI_API_KEY environment variable not set.")
-    exit(1)
-
-# Configure Gemini API
-try:
-    genai.configure(api_key=gemini_api_key)
-except Exception as e:
-    logger.error(f"Failed to configure Gemini API: {e}")
-    print(f"Error: Failed to configure Gemini API: {e}")
-    exit(1)
+# Logger config
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 class CryptoDataAgent:
     def __init__(self, gemini_api_key, binance_api_key=None, binance_api_secret=None):
-        """Initialize the agent with Gemini and Binance API keys."""
+        genai.configure(api_key=gemini_api_key)
+        self.google_model = genai.GenerativeModel('gemini-1.5-flash')
+        self.binance_api_key = binance_api_key
+        self.binance_api_secret = binance_api_secret
+        self.base_url = "https://api.binance.com/api/v3"
+        self.valid_symbols = ['BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'XRPUSDT', 'ADAUSDT']
+
+    def is_valid_symbol(self, symbol):
+        return isinstance(symbol, str) and re.match(r'^[A-Z]{2,6}USDT$', symbol) and symbol in self.valid_symbols
+
+    def get_crypto_price(self, symbol):
+        try:
+            response = requests.get(f"{self.base_url}/ticker/price", params={"symbol": symbol}, timeout=10)
+            response.raise_for_status()
+            return response.json()["price"]
+        except Exception as e:
+            logger.error(f"Error fetching {symbol} price: {e}")
+            return f"Error: {e}"
+
+    def interpret_query(self, query):
+        try:
+            prompt = (
+                f"You are a crypto expert. Extract the trading pair from the query: '{query}'. "
+                f"Respond with only: BTCUSDT, ETHUSDT, BNBUSDT, XRPUSDT, ADAUSDT. If unclear, return NONE."
+            )
+            response = self.google_model.generate_content(prompt)
+            symbol = response.text.strip().upper()
+            fallback = {
+                "BITCOIN": "BTCUSDT",
+                "ETHEREUM": "ETHUSDT",
+                "BNB": "BNBUSDT",
+                "RIPPLE": "XRPUSDT",
+                "CARDANO": "ADAUSDT",
+                "NONE": None
+            }
+            symbol = fallback.get(symbol, symbol)
+            return symbol if self.is_valid_symbol(symbol) else None
+        except Exception as e:
+            logger.error(f"Interpretation failed: {e}")
+            return None
+
+    def run(self, user_query):
+        symbol = self.interpret_query(user_query)
+        if symbol:
+            price = self.get_crypto_price(symbol)
+            return f"The current price of {symbol} is {price}"
+        else:
+            return "Sorry, I couldn't determine which crypto you meant."
+
+binance_api_secret = st.secrets["BINANCE_API_SECRET"]
+
+# Configure Gemini
+genai.configure(api_key=gemini_api_key)
+
+class CryptoDataAgent:
+    def __init__(self, gemini_api_key, binance_api_key=None, binance_api_secret=None):
         self.google_model = genai.GenerativeModel('gemini-1.5-flash')
         self.binance_api_key = binance_api_key
         self.binance_api_secret = binance_api_secret
         self.binance_base_url = "https://api.binance.com/api/v3"
-        # Common trading pairs for validation
         self.valid_symbols = ['BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'XRPUSDT', 'ADAUSDT']
 
     def is_valid_symbol(self, symbol):
-        """Validate the cryptocurrency symbol format and existence."""
-        if not isinstance(symbol, str):
-            return False
-        # Basic regex for Binance trading pair (e.g., BTCUSDT)
-        if not re.match(r'^[A-Z]{2,6}USDT$', symbol):
-            return False
-        # Optionally, check against valid symbols (could query Binance API for full list)
-        return symbol in self.valid_symbols
+        return isinstance(symbol, str) and re.match(r'^[A-Z]{2,6}USDT$', symbol) and symbol in self.valid_symbols
 
     def get_crypto_price(self, symbol):
-        """Fetch the current price of a cryptocurrency using Binance API with requests."""
         if not self.is_valid_symbol(symbol):
-            logger.error(f"Invalid symbol format: {symbol}")
             return f"Error: Invalid symbol format: {symbol}"
-        
         try:
             url = f"{self.binance_base_url}/ticker/price"
-            params = {"symbol": symbol.upper()}
-            response = requests.get(url, params=params, timeout=10)
+            response = requests.get(url, params={"symbol": symbol}, timeout=10)
             response.raise_for_status()
             data = response.json()
-            if "price" in data:
-                logger.info(f"Successfully fetched price for {symbol}: {data['price']}")
-                return data["price"]
-            else:
-                logger.error(f"Invalid symbol response from Binance: {data}")
-                return f"Error: Invalid symbol {symbol}"
-        except requests.Timeout:
-            logger.error(f"Request timeout for {symbol}")
-            return f"Error: Request timeout for {symbol}"
-        except requests.HTTPError as e:
-            logger.error(f"HTTP error for {symbol}: {e}")
-            return f"Error: HTTP error for {symbol}: {str(e)}"
-        except requests.ConnectionError:
-            logger.error(f"Connection error for {symbol}")
-            return f"Error: Connection error for {symbol}"
+            return data.get("price", f"Error: Invalid symbol {symbol}")
         except requests.RequestException as e:
-            logger.error(f"Request error for {symbol}: {e}")
             return f"Error fetching price for {symbol}: {str(e)}"
 
     def interpret_query(self, query):
-        """Use Gemini to interpret the query and extract the cryptocurrency symbol."""
+        prompt = (
+            f"From this query: '{query}', extract the crypto pair like BTCUSDT or use Bitcoin -> BTCUSDT, Ethereum -> ETHUSDT, etc."
+        )
         try:
-            prompt = (
-                "You are an expert in cryptocurrency trading pairs. From the query: '{query}', "
-                "extract the cryptocurrency trading pair (e.g., BTCUSDT for Bitcoin, ETHUSDT for Ethereum). "
-                "Return only the trading pair in uppercase (e.g., BTCUSDT). If no valid pair is found, "
-                "use this mapping: Bitcoin -> BTCUSDT, Ethereum -> ETHUSDT, Binance Coin -> BNBUSDT, "
-                "Ripple -> XRPUSDT, Cardano -> ADAUSDT. If still unclear, return None."
-            ).format(query=query)
             response = self.google_model.generate_content(prompt)
-            symbol = response.text.strip()
-            
-            # Apply mapping for common names
+            symbol = response.text.strip().upper()
             symbol_map = {
-                "Bitcoin": "BTCUSDT",
-                "Ethereum": "ETHUSDT",
-                "Binance Coin": "BNBUSDT",
-                "Ripple": "XRPUSDT",
-                "Cardano": "ADAUSDT"
+                "BITCOIN": "BTCUSDT",
+                "ETHEREUM": "ETHUSDT",
+                "BINANCE COIN": "BNBUSDT",
+                "RIPPLE": "XRPUSDT",
+                "CARDANO": "ADAUSDT"
             }
             symbol = symbol_map.get(symbol, symbol)
-            
-            if self.is_valid_symbol(symbol):
-                logger.info(f"Extracted valid symbol: {symbol}")
-                return symbol
-            logger.warning(f"Invalid or no symbol extracted: {symbol}")
-            return None
+            return symbol if self.is_valid_symbol(symbol) else None
         except Exception as e:
-            logger.error(f"Gemini API error: {e}")
-            print(f"Error in Gemini API call: {e}")
             return None
 
     def run(self, user_query):
-        """Execute the agent's workflow: interpret the query and fetch the price."""
-        try:
-            symbol = self.interpret_query(user_query)
-            if symbol:
-                price = self.get_crypto_price(symbol)
-                return f"The current price of {symbol} is {price}"
-            else:
-                logger.warning(f"No valid cryptocurrency symbol found in query: {user_query}")
-                return "I couldn’t determine the cryptocurrency you’re asking about."
-        except Exception as e:
-            logger.error(f"Unexpected error in run: {e}")
-            return f"Error: Unexpected issue occurred: {str(e)}"
-
-# Instantiate and execute the agent
-try:
-    agent = CryptoDataAgent(gemini_api_key, binance_api_key, binance_api_secret)
-    response = agent.run("What’s the price of Bitcoin?")
-    print(response)
-except Exception as e:
-    logger.error(f"Failed to initialize or run agent: {e}")
-    print(f"Error: Failed to initialize or run agent: {str(e)}")
+        symbol = self.interpret_query(user_query)
+        if symbol:
+            price = self.get_crypto_price(symbol)
+            return f"The current price of {symbol} is {price}"
+        else:
+            return "Sorry, I couldn't determine which crypto you meant."
