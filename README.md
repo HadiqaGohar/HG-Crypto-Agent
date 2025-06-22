@@ -7,6 +7,10 @@ A Streamlit-based AI-powered assistant that provides real-time cryptocurrency pr
 
 ---
 
+![HG Crypto Assistant Screenshot](https://github.com/HadiqaGohar/HG-Crypto-Agent/blob/main/Screenshot%20from%202025-06-22%2019-49-57.png)
+
+---
+
 ## 📌 Features
 
 - 🧠 Understands natural language queries like _“What’s the price of Bitcoin?”_
