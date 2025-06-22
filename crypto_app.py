@@ -1,28 +1,34 @@
 # crypto_app.py
 
 import streamlit as st
-from agent import CryptoDataAgent
+from agent import CryptoDataAgent  # Assuming your main class is saved in crypto_agent.py
 import os
+from dotenv import load_dotenv
 
-# Get API keys - works for both local and Streamlit Cloud
-gemini_api_key = st.secrets["GEMINI_API_KEY"] if "GEMINI_API_KEY" in st.secrets else os.getenv("GEMINI_API_KEY")
-binance_api_key = st.secrets["BINANCE_API_KEY"] if "BINANCE_API_KEY" in st.secrets else os.getenv("BINANCE_API_KEY")
-binance_api_secret = st.secrets["BINANCE_API_SECRET"] if "BINANCE_API_SECRET" in st.secrets else os.getenv("BINANCE_API_SECRET")
-
-# Validate keys
-if not gemini_api_key or not binance_api_key:
-    st.error("API keys are missing. Please check your Streamlit secrets or .env file.")
+# Load environment variables
+if not load_dotenv():
+    st.error(".env file not found or could not be loaded.")
     st.stop()
 
-# Initialize agent
+
+# Get API keys
+gemini_api_key = os.getenv("GEMINI_API_KEY")
+binance_api_key = os.getenv("BINANCE_API_KEY")
+binance_api_secret = os.getenv("BINANCE_API_SECRET")
+
+# Initialize the agent
 try:
     agent = CryptoDataAgent(gemini_api_key, binance_api_key, binance_api_secret)
 except Exception as e:
     st.error(f"Failed to initialize agent: {e}")
     st.stop()
 
-# Streamlit UI
+
+# Set page config
 st.set_page_config(page_title="HG Crypto Assistant", page_icon="💰")
+
+
+# Streamlit UI
 st.title("💰 Crypto Price Assistant")
 st.write("Ask about the price of Bitcoin, Ethereum, BNB, XRP, Cardano etc.")
 
@@ -36,7 +42,6 @@ if st.button("Get Price"):
             result = agent.run(query)
         st.success("Result:")
         st.write(result)
-
 # Footer
 st.markdown("""
 <hr style="border-top: 1px solid #bbb;">
