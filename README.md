@@ -3,7 +3,7 @@
 
 A Streamlit-based AI-powered assistant that provides real-time cryptocurrency prices using **Binance API** and interprets user queries with **Gemini (Google's GenAI)**.
 
-![HG Crypto Assistant Screenshot](3cdd22ae-b0fc-48c0-96bb-ee57c696c80c.png)
+![HG Crypto Assistant Screenshot](https://github.com/HadiqaGohar/HG-Crypto-Agent/blob/main/Screenshot%20from%202025-06-22%2019-44-37.png)
 
 ---
 
