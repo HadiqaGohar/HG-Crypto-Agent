@@ -11,6 +11,7 @@ if not load_dotenv():
     st.stop()
 
 
+
 # Get API keys
 gemini_api_key = os.getenv("GEMINI_API_KEY")
 binance_api_key = os.getenv("BINANCE_API_KEY")
